@@ -1,0 +1,6 @@
+{
+  "name": "Athlete Align: Fuzzy Data Matcher",
+  "description": "A data engineering tool to align Olympic and Paralympic athlete datasets using fuzzy matching logic for inconsistent location data.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
