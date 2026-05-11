@@ -10,7 +10,7 @@ A specialized data engineering workbench designed to align Olympic and Paralympi
   - **Confident Matches**: Automated alignments with high similarity scores.
   - **Flagged for Review**: Matches that meet the threshold but exhibit enough variance to require human validation.
   - **Orphaned Records**: Records from either dataset that could not be matched with high confidence.
-- **Two Flags, One Team AI Insights**: Integrated Gemini API assistant that generates strategic parity insights based on geographic distribution data, treating Olympic and Paralympic participation with equal prominence.
+- **Parity Visualization**: Integrated distribution chart to visualize geographic hotspots for both teams.
 
 ## 🛠 Technical Stack
 
@@ -18,7 +18,6 @@ A specialized data engineering workbench designed to align Olympic and Paralympi
 - **Styling**: Tailwind CSS (Professional Polish theme)
 - **Animations**: Framer Motion
 - **Icons**: Lucide React
-- **AI Integration**: Google Generative AI (@google/genai)
 
 ## 📋 Data Logic Specifications
 

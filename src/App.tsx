@@ -14,7 +14,6 @@ import {
   FileSpreadsheet,
   Users,
   Locate,
-  Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from './lib/utils';
@@ -25,14 +24,14 @@ import {
   ParalympicAthlete 
 } from './utils/fuzzyMatch';
 import { SAMPLE_OLYMPIC_DATA, SAMPLE_PARALYMPIC_DATA } from './sampleData';
-import { generateTeamInsights, HometownStats } from './services/geminiService';
+import { AthleteDistributionChart } from './components/AthleteDistributionChart';
+import { HometownStats } from './types';
 
 export default function App() {
   const [olympicData, setOlympicData] = useState<OlympicAthlete[]>(SAMPLE_OLYMPIC_DATA);
   const [paralympicData, setParalympicData] = useState<ParalympicAthlete[]>(SAMPLE_PARALYMPIC_DATA);
   const [activeTab, setActiveTab] = useState<'matches' | 'flagged' | 'unmatched'>('matches');
-  const [insights, setInsights] = useState<string | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [sidebarTab, setSidebarTab] = useState<'logic' | 'stats'>('logic');
 
   const alignment = useMemo(() => {
     return alignDatasets(olympicData, paralympicData);
@@ -59,18 +58,6 @@ export default function App() {
       paralympicCount: counts.p
     }));
   }, [olympicData, paralympicData]);
-
-  const handleGenerateInsights = async () => {
-    setIsGenerating(true);
-    try {
-      const result = await generateTeamInsights(hometownStats);
-      setInsights(result || null);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsGenerating(false);
-    }
-  };
 
   const flaggedMatches = alignment.matches.filter(m => m.isFlagged);
   const confidentMatches = alignment.matches.filter(m => !m.isFlagged);
@@ -123,92 +110,60 @@ export default function App() {
 
         {/* Logic / Documentation Pane */}
         <section className="w-80 bg-white border-r border-slate-200 flex flex-col shrink-0">
-          <div className="h-10 px-4 flex items-center bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase">
-            Alignment Methodology
-          </div>
-          <div className="flex-1 overflow-y-auto p-5 font-mono text-[13px] leading-relaxed text-slate-600 bg-slate-50/30">
-            <div className="space-y-4">
-              <CodeComment>// Suggested fuzzy match logic</CodeComment>
-              <CodeComment>// Resolves variations like "Colo Spgs" vs "Colorado Springs"</CodeComment>
-              
-              <div className="py-2">
-                <span className="text-blue-600">function</span> <span className="text-emerald-600">normalizeHometown</span>(str) {"{"}
-                <div className="pl-4 opacity-70">
-                  const subs = {"{"} "nyc": "new york city" ... {"}"};<br/>
-                  return str.toLowerCase().replace(...);
-                </div>
-                {"}"}
-              </div>
-
-              <div className="py-2">
-                <span className="text-blue-600">function</span> <span className="text-emerald-600">calculateSimilarity</span>(s1, s2) {"{"}
-                <div className="pl-4 opacity-70">
-                  <span className="text-slate-400 italic">// Using Levenshtein Distance</span><br/>
-                  const score = getDistance(s1, s2);<br/>
-                  return 1 - (score / maxLen);
-                </div>
-                {"}"}
-              </div>
-
-              <div className="p-3 bg-blue-50 border border-blue-100 rounded text-[11px] font-sans">
-                <div className="font-bold text-blue-800 mb-1 flex items-center gap-1">
-                  <Database className="w-3 h-3" /> Data Engineer Log
-                </div>
-                The current threshold is set to 80%. Matches below 95% but above 80% are automatically flagged for manual verification.
-              </div>
-
-              {/* Two Flags, One Team Insights */}
-              <div className="pt-6 border-t border-slate-200">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-[11px] font-bold text-slate-500 uppercase flex items-center gap-1.5">
-                    <Sparkles className="w-3 h-3 text-purple-500" /> Parity Insights
-                  </h3>
-                  <button 
-                    onClick={handleGenerateInsights}
-                    disabled={isGenerating}
-                    className="text-[9px] font-bold text-blue-600 uppercase hover:underline disabled:opacity-50"
-                  >
-                    {isGenerating ? "Processing..." : "Generate AI Insights"}
-                  </button>
-                </div>
-                
-                <div className="bg-slate-900 rounded-lg p-4 font-sans text-xs text-slate-300 min-h-[100px] flex flex-col justify-center">
-                  {!insights && !isGenerating && (
-                    <div className="text-center opacity-50 italic">
-                      Click generate to view strategic insights for the "Two Flags, One Team" parity initiative.
-                    </div>
-                  )}
-                  {isGenerating && (
-                    <div className="flex items-center justify-center gap-2 text-blue-400">
-                      <motion.div 
-                        animate={{ rotate: 360 }}
-                        transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-                      >
-                        <RotateCcw className="w-4 h-4" />
-                      </motion.div>
-                      <span>Analyzing hometown distribution...</span>
-                    </div>
-                  )}
-                  {insights && (
-                    <motion.div 
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="space-y-3 prose prose-invert max-w-none"
-                    >
-                      <div className="text-[10px] text-blue-400 font-bold uppercase tracking-widest mb-1 tabular-nums">Strategic Briefing</div>
-                      {insights.split('\n').filter(l => l.trim()).map((line, i) => (
-                        <p key={i} className="leading-normal">{line.replace(/^\d\.\s*/, '')}</p>
-                      ))}
-                      <div className="pt-2 flex justify-end">
-                        <div className="text-[9px] bg-slate-800 px-2 py-0.5 rounded border border-slate-700 text-slate-500 uppercase tracking-tighter">
-                          Reference: Tri-Composite Logo Standard
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </div>
-              </div>
+          <div className="h-10 px-4 flex items-center bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase justify-between">
+            <div className="flex gap-4">
+              <button 
+                onClick={() => setSidebarTab('logic')}
+                className={cn("hover:text-slate-800 transition-colors pt-0.5", sidebarTab === 'logic' ? "text-slate-800 border-b-2 border-slate-800" : "text-slate-400")}
+              >
+                Methodology
+              </button>
+              <button 
+                onClick={() => setSidebarTab('stats')}
+                className={cn("hover:text-slate-800 transition-colors pt-0.5", sidebarTab === 'stats' ? "text-slate-800 border-b-2 border-slate-800" : "text-slate-400")}
+                id="tab-stats"
+              >
+                Parity Distribution
+              </button>
             </div>
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            {sidebarTab === 'logic' ? (
+              <div className="p-5 font-mono text-[13px] leading-relaxed text-slate-600 bg-slate-50/30 space-y-4">
+                <CodeComment>// Suggested fuzzy match logic</CodeComment>
+                <CodeComment>// Resolves variations like "Colo Spgs" vs "Colorado Springs"</CodeComment>
+                
+                <div className="py-2">
+                  <span className="text-blue-600">function</span> <span className="text-emerald-600">normalizeHometown</span>(str) {"{"}
+                  <div className="pl-4 opacity-70">
+                    const subs = {"{"} "nyc": "new york city" ... {"}"};<br/>
+                    return str.toLowerCase().replace(...);
+                  </div>
+                  {"}"}
+                </div>
+
+                <div className="py-2">
+                  <span className="text-blue-600">function</span> <span className="text-emerald-600">calculateSimilarity</span>(s1, s2) {"{"}
+                  <div className="pl-4 opacity-70">
+                    <span className="text-slate-400 italic">// Using Levenshtein Distance</span><br/>
+                    const score = getDistance(s1, s2);<br/>
+                    return 1 - (score / maxLen);
+                  </div>
+                  {"}"}
+                </div>
+
+                <div className="p-3 bg-blue-50 border border-blue-100 rounded text-[11px] font-sans">
+                  <div className="font-bold text-blue-800 mb-1 flex items-center gap-1">
+                    <Database className="w-3 h-3" /> Data Engineer Log
+                  </div>
+                  The current threshold is set to 80%. Matches below 95% but above 80% are automatically flagged for manual verification.
+                </div>
+              </div>
+            ) : (
+              <div className="h-full">
+                <AthleteDistributionChart stats={hometownStats} />
+              </div>
+            )}
           </div>
         </section>
 
